@@ -7,8 +7,11 @@ import (
 
 func main() {
 	qiubai := crwaler.NewCrawler(crwaler.QiubaiId)
-	err := qiubai.Download()
+	items, err := qiubai.Download()
 	if err != nil {
 		fmt.Println(err)
+	}
+	for _, item := range items {
+		fmt.Println(item)
 	}
 }

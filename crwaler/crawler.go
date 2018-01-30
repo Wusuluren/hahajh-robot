@@ -5,7 +5,7 @@ import (
 )
 
 type Crawler interface {
-	Download() error
+	Download() ([]map[string]string, error)
 }
 
 const (

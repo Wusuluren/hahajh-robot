@@ -12,12 +12,12 @@ import (
 type Qiubai struct {
 }
 
-type qiubaiItem struct {
-	content string
-	thumb   string
-}
+//type qiubaiItem struct {
+//	content string
+//	thumb   string
+//}
 
-func (q *Qiubai) Download() ([]*qiubaiItem, error) {
+func (q *Qiubai) Download() ([]map[string]string, error) {
 	//resp, err := http.Get("https://www.qiushibaike.com/")
 	//if err != nil {
 	//	return err
@@ -57,9 +57,10 @@ func (q *Qiubai) Download() ([]*qiubaiItem, error) {
 		Children("div.\"article block untagged mb15 typs_*\"")
 
 		//fmt.Println(len(articles))
-	items := make([]*qiubaiItem, 0)
+	//items := make([]*qiubaiItem, 0)
+	items := make([]map[string]string, 0)
 	for _, article := range articles {
-		item := &qiubaiItem{}
+		item := make(map[string]string)
 		context := article.Find("a.\"contentHerf\"").
 			Find("div.\"content\"").
 			Find("span")
@@ -69,7 +70,7 @@ func (q *Qiubai) Download() ([]*qiubaiItem, error) {
 				textArry = append(textArry, node.Text)
 			}
 		}
-		item.content = strings.Trim(strings.Join(textArry, ""), "\t\n\r ")
+		item["content"] = strings.Trim(strings.Join(textArry, ""), "\t\n\r ")
 
 		thumb := article.Find("div.\"thumb\"").
 			Find("a").
@@ -78,11 +79,11 @@ func (q *Qiubai) Download() ([]*qiubaiItem, error) {
 		if value, ok := thumb.Attribute["src"]; ok {
 			thumbStr = value
 		}
-		item.thumb = strings.Trim(thumbStr, "\t\n\r ")
+		item["thumb"] = strings.Trim(thumbStr, "\t\n\r ")
 
 		items = append(items, item)
-		fmt.Println(item)
-		fmt.Println("-------------------------")
+		//fmt.Println(item)
+		//fmt.Println("-------------------------")
 	}
 
 	return items, nil
