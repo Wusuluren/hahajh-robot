@@ -6,6 +6,7 @@ import (
 	"hahajh-robot/util/gquery"
 	"io/ioutil"
 	"os"
+	"strings"
 )
 
 type Qiubai struct {
@@ -16,7 +17,7 @@ type qiubaiItem struct {
 	thumb   string
 }
 
-func (q *Qiubai) Download() error {
+func (q *Qiubai) Download() ([]*qiubaiItem, error) {
 	//resp, err := http.Get("https://www.qiushibaike.com/")
 	//if err != nil {
 	//	return err
@@ -24,7 +25,7 @@ func (q *Qiubai) Download() error {
 	//defer resp.Body.Close()
 	f, err := os.Open("test.html")
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer f.Close()
 	bytes, err := ioutil.ReadAll(f)
@@ -36,9 +37,6 @@ func (q *Qiubai) Download() error {
 	//f.Write(bytes)
 	html := string(bytes)
 	//print(html)
-	//htmltree.ParseHtml(html)
-	//items := parseHtml(html)
-	//println(len(items))
 
 	htmlNodeTree := gquery.ParseHtml(html)
 	var htmlRoot *gquery.HtmlNode
@@ -49,42 +47,45 @@ func (q *Qiubai) Download() error {
 		}
 	}
 	if htmlRoot == nil {
-		return nil
+		fmt.Println("htmlRoot not found")
+		return nil, nil
 	}
-	a := htmlRoot.Find("body")
-	if a != nil {
-		fmt.Println(a)
-	}
-	a = a.Find("div.#\"content\"")
-	if a != nil {
-		fmt.Println(a)
-	}
-	a = a.Find("div.\"content-block clearfix\"")
-	if a != nil {
-		fmt.Println(a)
-	}
-	a = a.Find("div.#\"content-left\"")
-	if a != nil {
-		fmt.Println(a)
-	}
-	a = a.Find("div.\"article block untagged mb15 typs_long\"")
-	if a != nil {
-		fmt.Println(a)
-	}
-	a = a.Find("div.\"content\"")
-	if a != nil {
-		fmt.Println(a)
-	}
-	a = a.Find("span")
-	if a != nil {
-		fmt.Println(a)
-	}
-	for _, node := range a.Children("") {
-		if node.Label == "" {
-			fmt.Println(node.Text)
+	articles := htmlRoot.Find("body").
+		Find("div.#\"content\"").
+		Find("div.\"content-block clearfix\"").
+		Find("div.#\"content-left\"").
+		Children("div.\"article block untagged mb15 typs_*\"")
+
+		//fmt.Println(len(articles))
+	items := make([]*qiubaiItem, 0)
+	for _, article := range articles {
+		item := &qiubaiItem{}
+		context := article.Find("a.\"contentHerf\"").
+			Find("div.\"content\"").
+			Find("span")
+		textArry := make([]string, 0)
+		for _, node := range context.Children("") {
+			if node.Label == "" {
+				textArry = append(textArry, node.Text)
+			}
 		}
+		item.content = strings.Trim(strings.Join(textArry, ""), "\t\n\r ")
+
+		thumb := article.Find("div.\"thumb\"").
+			Find("a").
+			Find("img")
+		thumbStr := ""
+		if value, ok := thumb.Attribute["src"]; ok {
+			thumbStr = value
+		}
+		item.thumb = strings.Trim(thumbStr, "\t\n\r ")
+
+		items = append(items, item)
+		fmt.Println(item)
+		fmt.Println("-------------------------")
 	}
-	return nil
+
+	return items, nil
 }
 
 func New() *Qiubai {

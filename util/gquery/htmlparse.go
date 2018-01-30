@@ -2,6 +2,7 @@ package gquery
 
 import (
 	"fmt"
+	"hahajh-robot/util/restr"
 	"strings"
 )
 
@@ -47,7 +48,10 @@ func (hn *HtmlNode) Children(str string) []*HtmlNode {
 			if node.Label == labelName {
 				if className != "" {
 					if value, ok := node.Attribute["class"]; ok {
-						if className == value {
+						//fmt.Println(className, value)
+						//if className == value {
+						if restr.ReStrCmp(value, className) {
+							//fmt.Println(node)
 							result = append(result, node)
 						}
 					}
@@ -69,7 +73,7 @@ func (hn *HtmlNode) Children(str string) []*HtmlNode {
 }
 
 func (hn *HtmlNode) Find(str string) *HtmlNode {
-	var result *HtmlNode
+	result := &HtmlNode{}
 	if str != "*" && str != "" {
 		tmps := strings.Split(str, ".")
 		labelName := tmps[0]
@@ -86,7 +90,9 @@ func (hn *HtmlNode) Find(str string) *HtmlNode {
 			if node.Label == labelName {
 				if className != "" {
 					if value, ok := node.Attribute["class"]; ok {
-						if className == value {
+						//fmt.Println(value, className)
+						//if className == value {
+						if restr.ReStrCmp(value, className) {
 							result = node
 							break
 						}
@@ -109,15 +115,17 @@ func (hn *HtmlNode) Find(str string) *HtmlNode {
 			result = hn.child[0]
 		}
 	}
+	//fmt.Println(str, result)
 	return result
 }
 
 func (hn *HtmlNode) Next() *HtmlNode {
-	return nil
+	result := &HtmlNode{}
+	return result
 }
 
 func (hn *HtmlNode) First(str string) *HtmlNode {
-	var result *HtmlNode
+	result := &HtmlNode{}
 	if str != "" {
 		tmps := strings.Split(str, ".")
 		idName := tmps[0]
@@ -149,7 +157,7 @@ func (hn *HtmlNode) First(str string) *HtmlNode {
 }
 
 func (hn *HtmlNode) Last(str string) *HtmlNode {
-	var result *HtmlNode
+	result := &HtmlNode{}
 	childNum := len(hn.child)
 	if str != "" && childNum > 0 {
 		tmps := strings.Split(str, ".")
@@ -183,7 +191,7 @@ func (hn *HtmlNode) Last(str string) *HtmlNode {
 }
 
 func (hn *HtmlNode) Eq(str string, idx int) *HtmlNode {
-	var result *HtmlNode
+	result := &HtmlNode{}
 	ctr := 0
 	if str != "*" && str != "" {
 		tmps := strings.Split(str, ".")
@@ -226,40 +234,40 @@ func (hn *HtmlNode) Eq(str string, idx int) *HtmlNode {
 	return result
 }
 
-func ParseHtml(html string) []*HtmlNode {
-	var printNodeTree func(*HtmlNode, int)
-	printNode := func(node *HtmlNode, tabNum int) {
-		tabArry := make([]string, tabNum)
-		for i := 0; i < tabNum; i++ {
-			tabArry[i] = "\t"
-		}
-		tabStr := strings.Join(tabArry, "")
-		if node.Label != "" {
-			fmt.Println(tabStr, "label: ", node.Label)
-		}
-		if node.Text != "" {
-			fmt.Println(tabStr, "text: ", node.Text)
-		}
-		if len(node.Attribute) > 0 {
-			fmt.Println(tabStr, "attr: ", node.Attribute)
-		}
-		if len(node.child) > 0 {
-			fmt.Println(tabStr, "child: ", len(node.child))
-			for _, child := range node.child {
-				printNodeTree(child, tabNum+1)
-			}
+func printNode(node *HtmlNode, tabNum int) {
+	tabArry := make([]string, tabNum)
+	for i := 0; i < tabNum; i++ {
+		tabArry[i] = "\t"
+	}
+	tabStr := strings.Join(tabArry, "")
+	if node.Label != "" {
+		fmt.Println(tabStr, "label: ", node.Label)
+	}
+	if node.Text != "" {
+		fmt.Println(tabStr, "text: ", node.Text)
+	}
+	if len(node.Attribute) > 0 {
+		fmt.Println(tabStr, "attr: ", node.Attribute)
+	}
+	if len(node.child) > 0 {
+		fmt.Println(tabStr, "child: ", len(node.child))
+		for _, child := range node.child {
+			printNodeTree(child, tabNum+1)
 		}
 	}
-	printNodeTree = func(tree *HtmlNode, tabNum int) {
-		printNode(tree, tabNum)
-	}
-	printNodeList := func(nodeList []*HtmlNode) {
-		for _, node := range nodeList {
-			printNode(node, 0)
-		}
-	}
-	_ = printNodeList
+}
 
+func printNodeTree(tree *HtmlNode, tabNum int) {
+	printNode(tree, tabNum)
+}
+
+func printNodeList(nodeList []*HtmlNode) {
+	for _, node := range nodeList {
+		printNode(node, 0)
+	}
+}
+
+func ParseHtml(html string) []*HtmlNode {
 	nodes := make([]string, 0, 64)
 	inQuote := false
 	beginIdx := 0
@@ -271,7 +279,7 @@ func ParseHtml(html string) []*HtmlNode {
 			inQuote = !inQuote
 		} else if !inQuote {
 			if cur == '<' {
-				if html[i+1] == '!' {
+				if html[i+1] == '!' && html[i+2] == '-' && html[i+3] == '-' {
 					beginIdx = i
 					except = Comment
 				}
@@ -284,7 +292,7 @@ func ParseHtml(html string) []*HtmlNode {
 					except = CloseTag
 				}
 			} else if cur == '>' {
-				if except == Comment && html[i-1] == '-' {
+				if except == Comment && html[i-1] == '-' && html[i-2] == '-' {
 					endIdx = i + 1
 					nodes = append(nodes, html[beginIdx:endIdx])
 					beginIdx = i + 1
