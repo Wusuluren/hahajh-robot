@@ -1,11 +1,11 @@
-package crwaler
+package crawler
 
 import (
-	"hahajh-robot/crwaler/qiubai"
+	"hahajh-robot/crawler/qiubai"
 )
 
 type Crawler interface {
-	Download() ([]map[string]string, error)
+	Download(url string) ([]map[string]string, error)
 }
 
 const (

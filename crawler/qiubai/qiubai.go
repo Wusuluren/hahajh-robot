@@ -1,40 +1,35 @@
 package qiubai
 
 import (
-	//"net/http"
 	"fmt"
 	"hahajh-robot/util/gquery"
 	"io/ioutil"
-	"os"
+	"net/http"
 	"strings"
 )
 
 type Qiubai struct {
 }
 
-//type qiubaiItem struct {
-//	content string
-//	thumb   string
-//}
-
-func (q *Qiubai) Download() ([]map[string]string, error) {
-	//resp, err := http.Get("https://www.qiushibaike.com/")
-	//if err != nil {
-	//	return err
-	//}
-	//defer resp.Body.Close()
-	f, err := os.Open("test.html")
+func (q *Qiubai) Download(url string) ([]map[string]string, error) {
+	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
-	bytes, err := ioutil.ReadAll(f)
+	defer resp.Body.Close()
+	//f, err := os.Open("test.html")
+	//if err != nil {
+	//	return nil, err
+	//}
+	//defer f.Close()
+	//bytes, err := ioutil.ReadAll(f)
 	//f, err := os.OpenFile("test.html", os.O_CREATE, 0666)
 	//if err != nil {
 	//	return err
 	//}
 	//defer f.Close()
 	//f.Write(bytes)
+	bytes, err := ioutil.ReadAll(resp.Body)
 	html := string(bytes)
 	//print(html)
 
