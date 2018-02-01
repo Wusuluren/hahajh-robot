@@ -1,6 +1,7 @@
 package crawler
 
 import (
+	"hahajh-robot/crawler/bsbdj"
 	"hahajh-robot/crawler/qiubai"
 )
 
@@ -10,6 +11,7 @@ type Crawler interface {
 
 const (
 	QiubaiId = iota
+	BsbdjId
 )
 
 func NewCrawler(id int) Crawler {
@@ -17,6 +19,8 @@ func NewCrawler(id int) Crawler {
 	switch id {
 	case QiubaiId:
 		crawler = qiubai.New()
+	case BsbdjId:
+		crawler = bsbdj.New()
 	}
 	return crawler
 }
