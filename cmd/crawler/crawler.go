@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 	//"github.com/garyburd/redigo/redis"
+	"context"
 )
 
 type qiubaiItem struct {
@@ -23,7 +24,8 @@ type qiubaiItem struct {
 	Filepath string
 }
 
-var saveItemChan = make(chan *qiubaiItem)
+var saveItemChan = make(chan *qiubaiItem, 1024)
+var ctx context.Context
 
 var sess *mgo.Session
 var collect *mgo.Collection
@@ -46,17 +48,22 @@ func main() {
 	defer sess.Close()
 	collect = sess.DB("hahajh-robot").C("qiubai")
 
+	var ctxCancel context.CancelFunc
+	ctx, ctxCancel = context.WithCancel(nil)
+
 	go asyncSaveItem()
 
 	go func() {
 		qiubai := crawler.NewCrawler(crawler.QiubaiId)
 		pageNum := 1
 		firstContent := ""
+		guardContent := ""
 		sleepTime := time.Second * 3
 		for {
 			url := fmt.Sprintf("https://www.qiushibaike.com/8hr/page/%d/", pageNum)
 			pageNum += 1
 			if pageNum > 13 {
+				guardContent = firstContent
 				pageNum = 1
 			}
 
@@ -70,8 +77,10 @@ func main() {
 				if firstContent == "" {
 					firstContent = item["content"]
 				} else {
-					if item["content"] == firstContent {
+					if item["content"] == guardContent {
+						guardContent = firstContent
 						pageNum = 1
+						firstContent = ""
 						sleepTime = time.Minute
 						break
 					} else {
@@ -88,6 +97,7 @@ func main() {
 				//logrus.Info(qbItem)
 			}
 			time.Sleep(sleepTime)
+			ctxCancel()
 			break
 		}
 	}()
@@ -120,6 +130,8 @@ func asyncSaveItem() {
 			if err != nil {
 				logrus.Error(err)
 			}
+		case <-ctx.Done():
+			return
 		}
 	}
 }

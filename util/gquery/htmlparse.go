@@ -137,7 +137,7 @@ func (hn *HtmlNode) First(str string) *HtmlNode {
 			if node.Label == idName {
 				if className != "" {
 					if value, ok := node.Attribute["class"]; ok {
-						if className == value {
+						if restr.ReStrCmp(value, className) {
 							result = node
 							break
 						}
@@ -171,7 +171,7 @@ func (hn *HtmlNode) Last(str string) *HtmlNode {
 			if node.Label == idName {
 				if className != "" {
 					if value, ok := node.Attribute["class"]; ok {
-						if className == value {
+						if restr.ReStrCmp(value, className) {
 							result = node
 							break
 						}
@@ -204,7 +204,7 @@ func (hn *HtmlNode) Eq(str string, idx int) *HtmlNode {
 			if node.Label == idName {
 				if className != "" {
 					if value, ok := node.Attribute["class"]; ok {
-						if className == value {
+						if restr.ReStrCmp(value, className) {
 							if ctr == idx {
 								result = node
 								break
@@ -234,7 +234,7 @@ func (hn *HtmlNode) Eq(str string, idx int) *HtmlNode {
 	return result
 }
 
-func printNode(node *HtmlNode, tabNum int) {
+func printNodeTree(node *HtmlNode, tabNum int) {
 	tabArry := make([]string, tabNum)
 	for i := 0; i < tabNum; i++ {
 		tabArry[i] = "\t"
@@ -257,13 +257,9 @@ func printNode(node *HtmlNode, tabNum int) {
 	}
 }
 
-func printNodeTree(tree *HtmlNode, tabNum int) {
-	printNode(tree, tabNum)
-}
-
 func printNodeList(nodeList []*HtmlNode) {
 	for _, node := range nodeList {
-		printNode(node, 0)
+		printNodeTree(node, 0)
 	}
 }
 
@@ -349,7 +345,7 @@ func ParseHtml(html string) []*HtmlNode {
 						endIdx = j
 					}
 					if except == AttributeName {
-						attrName = node[beginIdx:endIdx]
+						attrName = strings.Trim(node[beginIdx:endIdx], "\t\n\r ")
 						attr[attrName] = ""
 						beginIdx = endIdx + 1
 						except = OpenTag
@@ -386,7 +382,7 @@ func ParseHtml(html string) []*HtmlNode {
 					}
 				} else if cur == '=' {
 					endIdx = j
-					attrName = node[beginIdx:endIdx]
+					attrName = strings.Trim(node[beginIdx:endIdx], "\t\n\r ")
 					beginIdx = endIdx + 1
 					except = AttributeValue
 				} else {

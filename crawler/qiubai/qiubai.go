@@ -85,6 +85,5 @@ func (q *Qiubai) Download(url string) ([]map[string]string, error) {
 }
 
 func New() *Qiubai {
-	q := Qiubai{}
-	return &q
+	return &Qiubai{}
 }
