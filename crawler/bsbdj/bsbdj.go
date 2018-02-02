@@ -2,6 +2,7 @@ package bsbdj
 
 import (
 	"fmt"
+	"hahajh-robot/crawler/common"
 	"hahajh-robot/util/gquery"
 	"io/ioutil"
 	"net/http"
@@ -41,7 +42,7 @@ func (b *Bsbdj) Download(url string) ([]map[string]string, error) {
 			break
 		}
 	}
-	if htmlRoot == nil {
+	if common.IsEmptyNode(htmlRoot) {
 		fmt.Println("htmlRoot not found")
 		return nil, nil
 	}
@@ -59,14 +60,7 @@ func (b *Bsbdj) Download(url string) ([]map[string]string, error) {
 		context := article.Find("div.\"j-r-list-c\"").
 			Find("div.\"j-r-list-c-desc\"").
 			Find("a")
-
-		textArry := make([]string, 0)
-		for _, node := range context.Children("") {
-			if node.Label == "" {
-				textArry = append(textArry, node.Text)
-			}
-		}
-		item["content"] = strings.Trim(strings.Join(textArry, ""), "\t\n\r ")
+		item["content"] = common.GetChildrenText(context)
 
 		thumb := article.Find("div.\"j-r-list-c\"").
 			Find("div.\"j-r-list-c-img\"").
@@ -93,14 +87,7 @@ func (b *Bsbdj) Download(url string) ([]map[string]string, error) {
 		context := article.Find("div.\"j-r-list-c\"").
 			Find("div.\"j-r-list-c-desc\"").
 			Find("a")
-
-		textArry := make([]string, 0)
-		for _, node := range context.Children("") {
-			if node.Label == "" {
-				textArry = append(textArry, node.Text)
-			}
-		}
-		item["content"] = strings.Trim(strings.Join(textArry, ""), "\t\n\r ")
+		item["content"] = common.GetChildrenText(context)
 
 		thumb := article.Find("div.\"j-r-list-c\"").
 			Find("div.\"j-r-list-c-img\"").
@@ -128,14 +115,7 @@ func (b *Bsbdj) Download(url string) ([]map[string]string, error) {
 		context := article.Find("div.\"j-item\"").
 			Find("div.\"j-item-des\"").
 			Find("a")
-
-		textArry := make([]string, 0)
-		for _, node := range context.Children("") {
-			if node.Label == "" {
-				textArry = append(textArry, node.Text)
-			}
-		}
-		item["content"] = strings.Trim(strings.Join(textArry, ""), "\t\n\r ")
+		item["content"] = common.GetChildrenText(context)
 
 		thumb := article.Find("div.\"j-item\"").
 			Find("a").
@@ -164,14 +144,7 @@ func (b *Bsbdj) Download(url string) ([]map[string]string, error) {
 		context := article.Find("div.\"j-item\"").
 			Find("div.\"j-item-des\"").
 			Find("a")
-
-		textArry := make([]string, 0)
-		for _, node := range context.Children("") {
-			if node.Label == "" {
-				textArry = append(textArry, node.Text)
-			}
-		}
-		item["content"] = strings.Trim(strings.Join(textArry, ""), "\t\n\r ")
+		item["content"] = common.GetChildrenText(context)
 
 		thumb := article.Find("div.\"j-item\"").
 			Find("a").

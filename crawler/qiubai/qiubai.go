@@ -2,6 +2,7 @@ package qiubai
 
 import (
 	"fmt"
+	"hahajh-robot/crawler/common"
 	"hahajh-robot/util/gquery"
 	"io/ioutil"
 	"net/http"
@@ -17,21 +18,8 @@ func (q *Qiubai) Download(url string) ([]map[string]string, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	//f, err := os.Open("test.html")
-	//if err != nil {
-	//	return nil, err
-	//}
-	//defer f.Close()
-	//bytes, err := ioutil.ReadAll(f)
-	//f, err := os.OpenFile("test.html", os.O_CREATE, 0666)
-	//if err != nil {
-	//	return err
-	//}
-	//defer f.Close()
-	//f.Write(bytes)
 	bytes, err := ioutil.ReadAll(resp.Body)
 	html := string(bytes)
-	//print(html)
 
 	htmlNodeTree := gquery.ParseHtml(html)
 	var htmlRoot *gquery.HtmlNode
@@ -41,7 +29,7 @@ func (q *Qiubai) Download(url string) ([]map[string]string, error) {
 			break
 		}
 	}
-	if htmlRoot == nil {
+	if common.IsEmptyNode(htmlRoot) {
 		fmt.Println("htmlRoot not found")
 		return nil, nil
 	}
@@ -51,21 +39,13 @@ func (q *Qiubai) Download(url string) ([]map[string]string, error) {
 		Find("div.#\"content-left\"").
 		Children("div.\"article block untagged mb15 typs_*\"")
 
-		//fmt.Println(len(articles))
-	//items := make([]*qiubaiItem, 0)
 	items := make([]map[string]string, 0)
 	for _, article := range articles {
 		item := make(map[string]string)
 		context := article.Find("a.\"contentHerf\"").
 			Find("div.\"content\"").
 			Find("span")
-		textArry := make([]string, 0)
-		for _, node := range context.Children("") {
-			if node.Label == "" {
-				textArry = append(textArry, node.Text)
-			}
-		}
-		item["content"] = strings.Trim(strings.Join(textArry, ""), "\t\n\r ")
+		item["content"] = common.GetChildrenText(context)
 
 		thumb := article.Find("div.\"thumb\"").
 			Find("a").
@@ -77,8 +57,6 @@ func (q *Qiubai) Download(url string) ([]map[string]string, error) {
 		item["thumb"] = strings.Trim(thumbStr, "\t\n\r ")
 
 		items = append(items, item)
-		//fmt.Println(item)
-		//fmt.Println("-------------------------")
 	}
 
 	return items, nil
