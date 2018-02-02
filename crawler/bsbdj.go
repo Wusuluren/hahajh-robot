@@ -1,18 +1,17 @@
-package bsbdj
+package crawler
 
 import (
 	"fmt"
-	"hahajh-robot/crawler/common"
 	"hahajh-robot/util/gquery"
 	"io/ioutil"
 	"net/http"
 	"strings"
 )
 
-type Bsbdj struct {
+type bsbdj struct {
 }
 
-func (b *Bsbdj) Download(url string) ([]map[string]string, error) {
+func (b *bsbdj) Download(url string) ([]map[string]string, error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
@@ -42,7 +41,7 @@ func (b *Bsbdj) Download(url string) ([]map[string]string, error) {
 			break
 		}
 	}
-	if common.IsEmptyNode(htmlRoot) {
+	if isEmptyNode(htmlRoot) {
 		fmt.Println("htmlRoot not found")
 		return nil, nil
 	}
@@ -60,7 +59,7 @@ func (b *Bsbdj) Download(url string) ([]map[string]string, error) {
 		context := article.Find("div.\"j-r-list-c\"").
 			Find("div.\"j-r-list-c-desc\"").
 			Find("a")
-		item["content"] = common.GetChildrenText(context)
+		item["content"] = getChildrenText(context)
 
 		thumb := article.Find("div.\"j-r-list-c\"").
 			Find("div.\"j-r-list-c-img\"").
@@ -87,7 +86,7 @@ func (b *Bsbdj) Download(url string) ([]map[string]string, error) {
 		context := article.Find("div.\"j-r-list-c\"").
 			Find("div.\"j-r-list-c-desc\"").
 			Find("a")
-		item["content"] = common.GetChildrenText(context)
+		item["content"] = getChildrenText(context)
 
 		thumb := article.Find("div.\"j-r-list-c\"").
 			Find("div.\"j-r-list-c-img\"").
@@ -115,7 +114,7 @@ func (b *Bsbdj) Download(url string) ([]map[string]string, error) {
 		context := article.Find("div.\"j-item\"").
 			Find("div.\"j-item-des\"").
 			Find("a")
-		item["content"] = common.GetChildrenText(context)
+		item["content"] = getChildrenText(context)
 
 		thumb := article.Find("div.\"j-item\"").
 			Find("a").
@@ -144,7 +143,7 @@ func (b *Bsbdj) Download(url string) ([]map[string]string, error) {
 		context := article.Find("div.\"j-item\"").
 			Find("div.\"j-item-des\"").
 			Find("a")
-		item["content"] = common.GetChildrenText(context)
+		item["content"] = getChildrenText(context)
 
 		thumb := article.Find("div.\"j-item\"").
 			Find("a").
@@ -163,6 +162,6 @@ func (b *Bsbdj) Download(url string) ([]map[string]string, error) {
 	return items, nil
 }
 
-func New() *Bsbdj {
-	return &Bsbdj{}
+func newBsbdj() *bsbdj {
+	return &bsbdj{}
 }

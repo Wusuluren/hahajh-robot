@@ -1,9 +1,6 @@
 package crawler
 
-import (
-	"hahajh-robot/crawler/bsbdj"
-	"hahajh-robot/crawler/qiubai"
-)
+import ()
 
 type Crawler interface {
 	Download(url string) ([]map[string]string, error)
@@ -18,9 +15,9 @@ func NewCrawler(id int) Crawler {
 	var crawler Crawler
 	switch id {
 	case QiubaiId:
-		crawler = qiubai.New()
+		crawler = newQiubai()
 	case BsbdjId:
-		crawler = bsbdj.New()
+		crawler = newBsbdj()
 	}
 	return crawler
 }

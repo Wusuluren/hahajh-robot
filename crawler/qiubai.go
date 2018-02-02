@@ -1,18 +1,17 @@
-package qiubai
+package crawler
 
 import (
 	"fmt"
-	"hahajh-robot/crawler/common"
 	"hahajh-robot/util/gquery"
 	"io/ioutil"
 	"net/http"
 	"strings"
 )
 
-type Qiubai struct {
+type qiubai struct {
 }
 
-func (q *Qiubai) Download(url string) ([]map[string]string, error) {
+func (q *qiubai) Download(url string) ([]map[string]string, error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
@@ -29,7 +28,7 @@ func (q *Qiubai) Download(url string) ([]map[string]string, error) {
 			break
 		}
 	}
-	if common.IsEmptyNode(htmlRoot) {
+	if isEmptyNode(htmlRoot) {
 		fmt.Println("htmlRoot not found")
 		return nil, nil
 	}
@@ -45,7 +44,7 @@ func (q *Qiubai) Download(url string) ([]map[string]string, error) {
 		context := article.Find("a.\"contentHerf\"").
 			Find("div.\"content\"").
 			Find("span")
-		item["content"] = common.GetChildrenText(context)
+		item["content"] = getChildrenText(context)
 
 		thumb := article.Find("div.\"thumb\"").
 			Find("a").
@@ -62,6 +61,6 @@ func (q *Qiubai) Download(url string) ([]map[string]string, error) {
 	return items, nil
 }
 
-func New() *Qiubai {
-	return &Qiubai{}
+func newQiubai() *qiubai {
+	return &qiubai{}
 }

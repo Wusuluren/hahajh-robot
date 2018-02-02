@@ -1,11 +1,12 @@
-package qiubai
+package crawler_test
 
 import (
+	"hahajh-robot/crawler"
 	"testing"
 )
 
-func TestDownload(t *testing.T) {
-	crawler := &Qiubai{}
+func TestQiubaiDownload(t *testing.T) {
+	crawler := crawler.NewCrawler(crawler.QiubaiId)
 	url := "https://www.qiushibaike.com/"
 	items, err := crawler.Download(url)
 	if err != nil {

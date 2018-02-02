@@ -1,11 +1,12 @@
-package bsbdj
+package crawler_test
 
 import (
+	"hahajh-robot/crawler"
 	"testing"
 )
 
-func TestDownload(t *testing.T) {
-	crawler := &Bsbdj{}
+func TestBsbdjDownload(t *testing.T) {
+	crawler := crawler.NewCrawler(crawler.BsbdjId)
 	url := "http://www.budejie.com/pic/"
 	items, err := crawler.Download(url)
 	if err != nil {
