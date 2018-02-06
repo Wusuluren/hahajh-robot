@@ -25,6 +25,8 @@ type qiubaiItem struct {
 }
 
 var saveItemChan = make(chan *qiubaiItem, 1024)
+var mainChan = make(chan bool)
+
 var ctx context.Context
 
 var sess *mgo.Session
@@ -49,7 +51,7 @@ func main() {
 	collect = sess.DB("hahajh-robot").C("qiubai")
 
 	var ctxCancel context.CancelFunc
-	ctx, ctxCancel = context.WithCancel(nil)
+	ctx, ctxCancel = context.WithCancel(context.Background())
 
 	go asyncSaveItem()
 
@@ -61,6 +63,7 @@ func main() {
 		sleepTime := time.Second * 3
 		for {
 			url := fmt.Sprintf("https://www.qiushibaike.com/8hr/page/%d/", pageNum)
+			logrus.Info(url)
 			pageNum += 1
 			if pageNum > 13 {
 				guardContent = firstContent
@@ -72,7 +75,6 @@ func main() {
 				logrus.Error(err)
 				continue
 			}
-			qbItem := &qiubaiItem{}
 			for _, item := range items {
 				if firstContent == "" {
 					firstContent = item["content"]
@@ -82,11 +84,13 @@ func main() {
 						pageNum = 1
 						firstContent = ""
 						sleepTime = time.Minute
-						break
+						ctxCancel()
+						return
 					} else {
 						sleepTime = time.Second * 3
 					}
 				}
+				qbItem := &qiubaiItem{}
 				qbItem.Content = item["content"]
 				qbItem.Thumb = item["thumb"]
 				ImgUrl := strings.Trim(item["thumb"], "\"")
@@ -94,15 +98,13 @@ func main() {
 				qbItem.ImgUrl = "http:" + ImgUrl
 				qbItem.Filepath = "./pictures/qiushibaike/" + filename
 				saveItemChan <- qbItem
-				//logrus.Info(qbItem)
+				logrus.Info(qbItem)
 			}
 			time.Sleep(sleepTime)
-			ctxCancel()
-			break
 		}
 	}()
 
-	<-make(chan bool)
+	<-mainChan
 }
 
 func asyncSaveItem() {
@@ -118,19 +120,13 @@ func asyncSaveItem() {
 				continue
 			}
 			logrus.Println(string(bytes))
-			//logrus.Println(bytes)
-			//qbItem := qiubaiItem{}
-			//err = json.Unmarshal(bytes, &qbItem)
-			//if err != nil {
-			//	logrus.Fatal(err)
-			//}
-			//logrus.Info(qbItem)
 
 			err = collect.Insert(item)
 			if err != nil {
 				logrus.Error(err)
 			}
 		case <-ctx.Done():
+			mainChan <- true
 			return
 		}
 	}

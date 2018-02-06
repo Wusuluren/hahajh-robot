@@ -1,7 +1,5 @@
 package crawler
 
-import ()
-
 type Crawler interface {
 	Download(url string) ([]map[string]string, error)
 }
