@@ -3,3 +3,5 @@
 *.jpg
 *.log
 *.exe
+*.yml
+*.yaml
