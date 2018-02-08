@@ -12,7 +12,7 @@ While objShell.AppActivate("Commit Changes")=False
 Wend
 Wscript.Sleep 100
 objShell.SendKeys("(%i)")
-Wscript.Sleep 100
+Wscript.Sleep 500
 objShell.SendKeys("%{UP 2}")
 Wscript.Sleep 100
 objShell.SendKeys("{ENTER}")
