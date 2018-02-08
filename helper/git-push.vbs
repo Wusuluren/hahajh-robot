@@ -1,7 +1,10 @@
 Dim objShell
 
 Set objShell = CreateObject("Wscript.Shell")
-objShell.AppActivate("hahajh-robot")
+While objShell.AppActivate("hahajh-robot")=False
+	Wscript.Sleep 100
+Wend
+Wscript.Sleep 100
 objShell.SendKeys("(^+K)")
 
 While objShell.AppActivate("Push Commits")=False
