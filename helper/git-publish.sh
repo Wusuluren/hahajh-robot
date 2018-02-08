@@ -2,5 +2,4 @@
 
 powershell git-commit.vbs
 #sleep 2     # sleep always get his place,:-)
-#powershell git-push.vbs
 
