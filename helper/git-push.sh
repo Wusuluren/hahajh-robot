@@ -1,2 +1,3 @@
 git commit -am "fix"
-powershell git-push.vbs
+git push origin
+#powershell git-push.vbs
