@@ -15,19 +15,9 @@ objShell.SendKeys("{DOWN}")
 Wscript.Sleep 100
 objShell.SendKeys("{TAB 6}")
 Wscript.Sleep 100
+objShell.SendKeys("(%i)")
+Wscript.Sleep 100
+objShell.SendKeys("%{UP 2}")
+Wscript.Sleep 100
 objShell.SendKeys("{ENTER}")
 'objShell.SendKeys("%{F4}")
-
-While objShell.AppActivate("hahajh-robot")=False
-	Wscript.Sleep 100
-Wend
-Wscript.Sleep 100
-objShell.SendKeys("(^+K)")
-
-While objShell.AppActivate("Push Commits")=False
-	Wscript.Sleep 100
-Wend
-Wscript.Sleep 100
-objShell.SendKeys("{TAB 4}")
-Wscript.Sleep 100
-objShell.SendKeys("{ENTER}")
