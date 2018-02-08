@@ -14,8 +14,11 @@ Wscript.Sleep 500
 objShell.SendKeys("(%p)")
 Wscript.Sleep 500
 objShell.SendKeys("{ENTER}")
+While objShell.AppActivate("Push Commits")=False
+	Wscript.Sleep 100
+Wend
 Wscript.Sleep 500
-objShell.SendKeys("{TAB 4}")
+objShell.SendKeys("(%p)")
 Wscript.Sleep 500
 objShell.SendKeys("{ENTER}")
 'objShell.SendKeys("%{F4}")
