@@ -14,4 +14,8 @@ Wscript.Sleep 100
 objShell.SendKeys("(%p)")
 Wscript.Sleep 100
 objShell.SendKeys("{ENTER}")
+Wscript.Sleep 100
+objShell.SendKeys("(%p)")
+Wscript.Sleep 100
+objShell.SendKeys("{ENTER}")
 'objShell.SendKeys("%{F4}")
