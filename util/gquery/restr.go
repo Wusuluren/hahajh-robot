@@ -1,24 +1,8 @@
-package restr
+package gquery
 
 import (
 	"fmt"
 )
-
-//func matchNumber(c byte) bool {
-//	return c>='0' && c<='9'
-//}
-//
-//func matchAlpha(c byte) bool {
-//	return (c>='a' && c <='z') || (c>='A' && c <='Z')
-//}
-//
-//func matchAny(c byte) bool {
-//	return c==c
-//}
-//
-//func matchNone(c byte) bool {
-//	return c!=c
-//}
 
 func convertByteToString(b byte) string {
 	return fmt.Sprintf("%c", b)

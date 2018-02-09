@@ -19,6 +19,7 @@ const (
 	loginUrl   = "login"
 	logoutUrl  = "logout"
 	publishUrl = "publish"
+	signupUrl  = "signup"
 )
 
 type Account struct {
@@ -29,12 +30,15 @@ type Account struct {
 	cookie    *http.Cookie
 }
 
-func InitAccount(account *Account) error {
+func InitAccount(configUrls map[string]string, accounts ...*Account) error {
 	cookieJar, err := cookiejar.New(nil)
 	if err != nil {
 		return err
 	}
-	account.cookieJar = cookieJar
+	for _, account := range accounts {
+		account.cookieJar = cookieJar
+		account.Urls = configUrls
+	}
 	return nil
 }
 
@@ -70,21 +74,46 @@ func (ac *Account) Logout() error {
 	return checkHttpRespError(client.Do(req))
 }
 
-func (ac *Account) Publish(item HahajhItem) error {
+func (ac *Account) Signup() error {
+	formData := map[string]string{
+		"username":  ac.Username,
+		"password1": ac.Password,
+		"password2": ac.Password,
+	}
+	byte, err := json.Marshal(formData)
+	if err != nil {
+		return err
+	}
+	client := &http.Client{
+		CheckRedirect: nil,
+		Jar:           ac.cookieJar,
+	}
+	req, err := http.NewRequest("POST", ac.Urls[signupUrl], bytes.NewReader(byte))
+	if err != nil {
+		return err
+	}
+	return checkHttpRespError(client.Do(req))
+}
+
+func (ac *Account) Publish(item *HahajhItem) error {
 	var b bytes.Buffer
+	var err error
 	w := multipart.NewWriter(&b)
 	defer w.Close()
-	f, err := os.Open(item.Picture)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	fw, err := w.CreateFormFile("pic", item.Picture)
-	if err != nil {
-		return err
-	}
-	if _, err = io.Copy(fw, f); err != nil {
-		return err
+	var fw io.Writer
+	if len(item.Picture) > 0 {
+		f, err := os.Open(item.Picture)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+		fw, err = w.CreateFormFile("pic", item.Picture)
+		if err != nil {
+			return err
+		}
+		if _, err = io.Copy(fw, f); err != nil {
+			return err
+		}
 	}
 	fw, err = w.CreateFormField("text_area")
 	if err != nil {

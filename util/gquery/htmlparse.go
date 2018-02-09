@@ -2,7 +2,6 @@ package gquery
 
 import (
 	"fmt"
-	"hahajh-robot/util/restr"
 	"strings"
 )
 
@@ -50,7 +49,7 @@ func (hn *HtmlNode) Children(str string) []*HtmlNode {
 					if value, ok := node.Attribute["class"]; ok {
 						//fmt.Println(className, value)
 						//if className == value {
-						if restr.ReStrCmp(value, className) {
+						if ReStrCmp(value, className) {
 							//fmt.Println(node)
 							result = append(result, node)
 						}
@@ -92,7 +91,7 @@ func (hn *HtmlNode) Find(str string) *HtmlNode {
 					if value, ok := node.Attribute["class"]; ok {
 						//fmt.Println(value, className)
 						//if className == value {
-						if restr.ReStrCmp(value, className) {
+						if ReStrCmp(value, className) {
 							result = node
 							break
 						}
@@ -137,7 +136,7 @@ func (hn *HtmlNode) First(str string) *HtmlNode {
 			if node.Label == idName {
 				if className != "" {
 					if value, ok := node.Attribute["class"]; ok {
-						if restr.ReStrCmp(value, className) {
+						if ReStrCmp(value, className) {
 							result = node
 							break
 						}
@@ -171,7 +170,7 @@ func (hn *HtmlNode) Last(str string) *HtmlNode {
 			if node.Label == idName {
 				if className != "" {
 					if value, ok := node.Attribute["class"]; ok {
-						if restr.ReStrCmp(value, className) {
+						if ReStrCmp(value, className) {
 							result = node
 							break
 						}
@@ -204,7 +203,7 @@ func (hn *HtmlNode) Eq(str string, idx int) *HtmlNode {
 			if node.Label == idName {
 				if className != "" {
 					if value, ok := node.Attribute["class"]; ok {
-						if restr.ReStrCmp(value, className) {
+						if ReStrCmp(value, className) {
 							if ctr == idx {
 								result = node
 								break

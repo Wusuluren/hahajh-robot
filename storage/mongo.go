@@ -31,14 +31,23 @@ func (ms *mongoStorage) Open(config map[string]string) error {
 	return nil
 }
 
-func (ms *mongoStorage) Close() {
+func (ms *mongoStorage) Close() error {
 	if ms.sess != nil {
 		ms.sess.Close()
 	}
+	return nil
 }
 
 func (ms *mongoStorage) Save(items ...interface{}) error {
 	return ms.collect.Insert(items...)
+}
+
+func (ms *mongoStorage) Next(item interface{}) error {
+	return nil
+}
+
+func (ms *mongoStorage) NextN(items ...interface{}) error {
+	return nil
 }
 
 func newMongoStorage() Storage {

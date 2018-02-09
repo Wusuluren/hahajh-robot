@@ -116,10 +116,12 @@ func asyncCrawlerPages(urlPattern string) {
 			qbItem := &qiubaiItem{}
 			qbItem.Content = item["content"]
 			qbItem.Thumb = item["thumb"]
-			ImgUrl := strings.Trim(item["thumb"], "\"")
-			filename := ImgUrl[strings.LastIndex(ImgUrl, "/")+1:]
-			qbItem.ImgUrl = "http:" + ImgUrl
-			qbItem.Filepath = "./pictures/qiushibaike/" + filename
+			if item["thumb"] != "" {
+				ImgUrl := strings.Trim(item["thumb"], "\"")
+				filename := ImgUrl[strings.LastIndex(ImgUrl, "/")+1:]
+				qbItem.ImgUrl = "http:" + ImgUrl
+				qbItem.Filepath = "./pictures/qiushibaike/" + filename
+			}
 			saveItemChan <- qbItem
 			//logrus.Info(qbItem)
 		}
