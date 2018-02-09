@@ -7,6 +7,9 @@ import (
 
 func TestApi(t *testing.T) {
 	configUrls, err := robot.ParseUrl("hahajh-url.yml")
+	if err != nil {
+		t.Fatal(err)
+	}
 	configAccount, err := robot.ParseAccount("hahajh-account.yml")
 	if err != nil {
 		t.Fatal(err)
