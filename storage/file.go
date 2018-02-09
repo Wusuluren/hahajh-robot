@@ -58,21 +58,7 @@ func (fs *fileStorage) Save(items ...interface{}) error {
 	return nil
 }
 
-func (fs *fileStorage) Next(item interface{}) error {
-	fs.mutex.Lock()
-	defer fs.mutex.Unlock()
-	line, _, err := fs.reader.ReadLine()
-	if err != nil {
-		return err
-	}
-	err = json.Unmarshal(line, item)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (fs *fileStorage) NextN(items ...interface{}) error {
+func (fs *fileStorage) Next(items ...interface{}) error {
 	fs.mutex.Lock()
 	defer fs.mutex.Unlock()
 	for _, item := range items {

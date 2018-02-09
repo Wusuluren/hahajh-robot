@@ -42,11 +42,7 @@ func (ms *mongoStorage) Save(items ...interface{}) error {
 	return ms.collect.Insert(items...)
 }
 
-func (ms *mongoStorage) Next(item interface{}) error {
-	return nil
-}
-
-func (ms *mongoStorage) NextN(items ...interface{}) error {
+func (ms *mongoStorage) Next(items ...interface{}) error {
 	return nil
 }
 

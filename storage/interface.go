@@ -3,8 +3,7 @@ package storage
 type Storage interface {
 	Open(config map[string]string) error
 	Save(items ...interface{}) error
-	Next(item interface{}) error
-	NextN(items ...interface{}) error
+	Next(items ...interface{}) error
 	Close() error
 }
 
