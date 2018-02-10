@@ -15,4 +15,7 @@ import (
 func TestGomacro(t *testing.T) {
 	var err error
 	// +go macro: checkError(err)
+	if err != nil {
+		t.Log(err)
+	}
 }
