@@ -3,7 +3,9 @@ package robot
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io"
+	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"net/http/cookiejar"
@@ -31,11 +33,11 @@ type Account struct {
 }
 
 func InitAccount(configUrls map[string]string, accounts ...*Account) error {
-	cookieJar, err := cookiejar.New(nil)
-	if err != nil {
-		return err
-	}
 	for _, account := range accounts {
+		cookieJar, err := cookiejar.New(nil)
+		if err != nil {
+			return err
+		}
 		account.cookieJar = cookieJar
 		account.Urls = configUrls
 	}
@@ -59,7 +61,29 @@ func (ac *Account) Login() error {
 	if err != nil {
 		return err
 	}
-	return checkHttpRespError(client.Do(req))
+
+	resp, err := client.Do(req)
+	byte, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	err = checkHttpRespError(resp, err)
+	if err != nil {
+		return err
+	}
+	type respItem struct {
+		Message  string
+		Is_login bool
+	}
+	item := respItem{}
+	err = json.Unmarshal(byte, &item)
+	if err != nil {
+		return err
+	}
+	if item.Message != "" {
+		return errors.New(item.Message)
+	}
+	return nil
 }
 
 func (ac *Account) Logout() error {
