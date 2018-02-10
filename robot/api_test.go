@@ -3,11 +3,17 @@ package robot_test
 import (
 	"hahajh-robot/robot"
 	"hahajh-robot/util/pathhelper"
+	"os"
 	"testing"
 	"time"
 )
 
 func TestApi(t *testing.T) {
+	env := os.Getenv("ENVIRONMENT")
+	if env != "DEBUG" {
+		t.Skip("skipped")
+	}
+
 	ph, err := pathhelper.NewPathHelper("robot")
 	if err != nil {
 		t.Fatal(err)
@@ -55,6 +61,5 @@ func TestApi(t *testing.T) {
 			t.Fatal(err)
 		}
 		time.Sleep(time.Second)
-
 	}
 }

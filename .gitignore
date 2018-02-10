@@ -5,3 +5,4 @@
 *.exe
 *.yml
 *.yaml
+!.travis.yml

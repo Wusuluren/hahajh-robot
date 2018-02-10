@@ -3,10 +3,16 @@ package storage_test
 import (
 	"hahajh-robot/storage"
 	"hahajh-robot/util/pathhelper"
+	"os"
 	"testing"
 )
 
 func TestFileStorage(t *testing.T) {
+	env := os.Getenv("ENVIRONMENT")
+	if env != "DEBUG" {
+		t.Skip("skipped")
+	}
+
 	ph, err := pathhelper.NewPathHelper("storage")
 	if err != nil {
 		t.Fatal(err)

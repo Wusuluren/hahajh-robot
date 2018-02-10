@@ -2,10 +2,16 @@ package storage_test
 
 import (
 	"hahajh-robot/storage"
+	"os"
 	"testing"
 )
 
 func TestMongoStorage(t *testing.T) {
+	env := os.Getenv("ENVIRONMENT")
+	if env != "DEBUG" {
+		t.Skip("skipped")
+	}
+
 	storage := storage.NewStorage(storage.MongoId)
 	config := map[string]string{
 		"address":    "127.0.0.1",
