@@ -51,7 +51,7 @@ func main() {
 	args := os.Args[1:]
 	argsInfo := make([]*ArgInfo, 0)
 	for _, arg := range args {
-		fmt.Println(arg)
+		//fmt.Println(arg)
 		fileInfo, err := os.Stat(arg)
 		Panic(err)
 		argsInfo = append(argsInfo, &ArgInfo{
@@ -77,6 +77,20 @@ func readWriteLine(reader *bufio.Reader, writer *bufio.Writer) (string, error) {
 	_, err = writer.WriteString(line + "\n")
 	Panic(err)
 	return line, nil
+}
+
+func preReadBytes(reader *bufio.Reader, num int) ([]byte, error) {
+	//lines := make([]string, num)
+	bytes, err := reader.Peek(num)
+	//for i := 0;i < num;i++ {
+	//	bytes, _, err := reader.ReadLine()
+	//	if err != nil {
+	//		return lines, err
+	//	}
+	//	line := string(bytes)
+	//	lines[i] = line
+	//}
+	return bytes, err
 }
 
 func parseDeclare(lines []string) ([]*DefineItem, error) {
@@ -128,16 +142,14 @@ func parseDeclare(lines []string) ([]*DefineItem, error) {
 				}
 				v := ""
 				for i := len(line) - 1; i >= idx; i-- {
-					if line[i] == ' ' {
-						continue
-					} else {
+					if line[i] != ' ' {
 						if line[i] == '\\' {
 							except = Values
 						} else {
 							except = Keyword
+							v = line[idx : i+1]
+							break
 						}
-						v = line[idx:i]
-						break
 					}
 				}
 				idx = 0
@@ -161,23 +173,21 @@ func parseDeclare(lines []string) ([]*DefineItem, error) {
 					values:  values,
 					prefix:  prefix,
 				}
-			} else if line != "" {
-				return nil, errors.New("except keyword")
+			} else if strings.Trim(line, "\t ") != "" {
+				return nil, errors.New(fmt.Sprintf("except keyword: %s", line))
 			}
 		} else if except == Values {
 			v := ""
+			except = Keyword
 			for i := len(line) - 1; i >= 0; i-- {
-				if line[i] == ' ' || line[i] == '\r' || line[i] == '\n' || line[i] == '\t' {
-					continue
-				} else {
-					if line[i] == '\\' {
+				c := line[i]
+				if c != ' ' && c != '\r' && c != '\n' && c != '\t' {
+					if c == '\\' {
 						except = Values
-						v = line[0:i]
 					} else {
-						except = Keyword
 						v = line[0 : i+1]
+						break
 					}
-					break
 				}
 			}
 			//fmt.Println("v:", v)
@@ -296,13 +306,22 @@ func gomacro(filepath string) {
 		} else if strings.HasPrefix(strings.TrimLeft(line, "\t "), "// +go macro: ") {
 			// macro declare
 			defineStat, err := parseStat(line)
-			fmt.Println(defineStat)
+			Panic(err)
+			//fmt.Println(defineStat)
 			if defineItem, ok := defineMap[defineStat.name]; !ok {
 				Panic(errors.New(fmt.Sprintf("unknowm name:%s", defineStat.name)))
 			} else {
+				size := 0
 				for _, v := range defineItem.values {
-					_, err = writer.WriteString(v + "\n")
-					Panic(err)
+					size += len(v) + 1
+				}
+				bytes, err := preReadBytes(reader, size)
+				Panic(err)
+				if string(bytes) != strings.Join(defineItem.values, "\n")+"\n" {
+					for _, v := range defineItem.values {
+						_, err = writer.WriteString(v + "\n")
+						Panic(err)
+					}
 				}
 			}
 		}
