@@ -2,11 +2,16 @@ package robot_test
 
 import (
 	"hahajh-robot/robot"
+	"hahajh-robot/util/pathhelper"
 	"testing"
 )
 
 func TestParseUrl(t *testing.T) {
-	config, err := robot.ParseUrl("hahajh-url.yml")
+	ph, err := pathhelper.NewPathHelper("robot")
+	if err != nil {
+		t.Fatal(err)
+	}
+	config, err := robot.ParseUrl(ph.MakeFilePath("test-url.yml"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -14,7 +19,11 @@ func TestParseUrl(t *testing.T) {
 }
 
 func TestParseAccount(t *testing.T) {
-	config, err := robot.ParseAccount("hahajh-account.yml")
+	ph, err := pathhelper.NewPathHelper("robot")
+	if err != nil {
+		t.Fatal(err)
+	}
+	config, err := robot.ParseAccount(ph.MakeFilePath("test-account.yml"))
 	if err != nil {
 		t.Fatal(err)
 	}

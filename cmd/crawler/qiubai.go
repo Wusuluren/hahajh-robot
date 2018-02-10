@@ -117,6 +117,7 @@ func asyncCrawlerPages(urlPattern string) {
 			qbItem.Content = item["content"]
 			qbItem.Thumb = item["thumb"]
 			if item["thumb"] != "" {
+				continue //for test, don't get image
 				ImgUrl := strings.Trim(item["thumb"], "\"")
 				filename := ImgUrl[strings.LastIndex(ImgUrl, "/")+1:]
 				qbItem.ImgUrl = "http:" + ImgUrl

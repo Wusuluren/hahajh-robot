@@ -2,15 +2,20 @@ package storage_test
 
 import (
 	"hahajh-robot/storage"
+	"hahajh-robot/util/pathhelper"
 	"testing"
 )
 
 func TestFileStorage(t *testing.T) {
+	ph, err := pathhelper.NewPathHelper("storage")
+	if err != nil {
+		t.Fatal(err)
+	}
 	storage := storage.NewStorage(storage.FileId)
 	config := map[string]string{
-		"filepath": "file_test.log",
+		"filepath": ph.MakeFilePath("file_test.log"),
 	}
-	err := storage.Open(config)
+	err = storage.Open(config)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -2,40 +2,59 @@ package robot_test
 
 import (
 	"hahajh-robot/robot"
+	"hahajh-robot/util/pathhelper"
 	"testing"
+	"time"
 )
 
 func TestApi(t *testing.T) {
-	configUrls, err := robot.ParseUrl("hahajh-url.yml")
+	ph, err := pathhelper.NewPathHelper("robot")
 	if err != nil {
 		t.Fatal(err)
 	}
-	configAccount, err := robot.ParseAccount("hahajh-account.yml")
+	configUrls, err := robot.ParseUrl(ph.MakeFilePath("test-url.yml"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	account := configAccount[0]
-	t.Log(account.Username, account.Password)
+	configAccounts, err := robot.ParseAccount(ph.MakeFilePath("test-account.yml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, account := range configAccounts {
+		t.Log(account.Username, account.Password)
 
-	item := &robot.HahajhItem{
-		Text:    "test",
-		Picture: "test.jpg",
-	}
-	err = robot.InitAccount(configUrls, account)
-	if err != nil {
-		t.Fatal(err)
-	}
-	//err = account.Signup()
-	//if err != nil {
-	//	t.Fatal(err)
-	//}
-	err = account.Login()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer account.Logout()
-	err = account.Publish(item)
-	if err != nil {
-		t.Fatal(err)
+		item := &robot.HahajhItem{
+			Text:    "test",
+			Picture: ph.MakeFilePath("test.jpg"),
+		}
+		_ = item
+		err = robot.InitAccount(configUrls, account)
+		if err != nil {
+			t.Fatal(err)
+		}
+		err = account.Login()
+		if err != nil {
+			err = account.Signup()
+			if err != nil {
+				t.Fatal(err)
+			}
+			time.Sleep(time.Second)
+			err = account.Login()
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+		time.Sleep(time.Second)
+		//err = account.Publish(item)
+		//if err != nil {
+		//	t.Fatal(err)
+		//}
+		//time.Sleep(time.Second)
+		err = account.Logout()
+		if err != nil {
+			t.Fatal(err)
+		}
+		time.Sleep(time.Second)
+
 	}
 }
