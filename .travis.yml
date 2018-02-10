@@ -3,4 +3,6 @@ language: go
 go:
    - 1.7
 
-script: go test
+script:
+  - make -f ./build/test.makefile
+  - make -f ./build/hahajh.makefile
