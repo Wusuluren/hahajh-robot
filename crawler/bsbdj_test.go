@@ -1,7 +1,7 @@
 package crawler_test
 
 import (
-	"hahajh-robot/crawler"
+	"github.com/wusuluren/hahajh-robot/crawler"
 	"testing"
 )
 

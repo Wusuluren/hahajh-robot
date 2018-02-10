@@ -1,7 +1,7 @@
 package gquery_test
 
 import (
-	"hahajh-robot/util/gquery"
+	"github.com/wusuluren/hahajh-robot/util/gquery"
 	"testing"
 )
 

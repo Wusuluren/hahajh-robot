@@ -1,7 +1,7 @@
 package crawler
 
 import (
-	"hahajh-robot/util/gquery"
+	"github.com/wusuluren/hahajh-robot/util/gquery"
 	"strings"
 )
 

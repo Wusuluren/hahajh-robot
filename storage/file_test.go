@@ -1,8 +1,8 @@
 package storage_test
 
 import (
-	"hahajh-robot/storage"
-	"hahajh-robot/util/pathhelper"
+	"github.com/wusuluren/hahajh-robot/storage"
+	"github.com/wusuluren/hahajh-robot/util/pathhelper"
 	"os"
 	"testing"
 )

@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/Sirupsen/logrus"
 	_ "github.com/go-sql-driver/mysql"
-	"hahajh-robot/crawler"
+	"github.com/wusuluren/hahajh-robot/crawler"
 	//"database/sql"
 	//"encoding/json"
 	"fmt"
@@ -14,7 +14,7 @@ import (
 	"time"
 	//"github.com/garyburd/redigo/redis"
 	"context"
-	"hahajh-robot/storage"
+	"github.com/wusuluren/hahajh-robot/storage"
 	"sync"
 )
 

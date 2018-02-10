@@ -1,8 +1,8 @@
 package robot_test
 
 import (
-	"hahajh-robot/robot"
-	"hahajh-robot/util/pathhelper"
+	"github.com/wusuluren/hahajh-robot/robot"
+	"github.com/wusuluren/hahajh-robot/util/pathhelper"
 	"os"
 	"testing"
 )

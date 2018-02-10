@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/Sirupsen/logrus"
-	"hahajh-robot/robot"
-	"hahajh-robot/storage"
+	"github.com/wusuluren/hahajh-robot/robot"
+	"github.com/wusuluren/hahajh-robot/storage"
 	"sync"
 	"time"
 )

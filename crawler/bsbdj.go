@@ -2,7 +2,7 @@ package crawler
 
 import (
 	"fmt"
-	"hahajh-robot/util/gquery"
+	"github.com/wusuluren/hahajh-robot/util/gquery"
 	"io/ioutil"
 	"net/http"
 	"strings"
