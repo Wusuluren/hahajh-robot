@@ -1,5 +1,6 @@
 # hahajh-robot
 robot for www.hahajh.com
+[![Build Status](https://travis-ci.org/Wusuluren/hahajh-robot.svg?branch=master)](https://travis-ci.org/Wusuluren/hahajh-robot)
 - crawler  
 crawler for qiushibaike, baisibudejie and more
 - robot  

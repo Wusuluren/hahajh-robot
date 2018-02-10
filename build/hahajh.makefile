@@ -8,6 +8,7 @@ hahajh_SRC = ../cmd/robot/hahajh.go
 
 LIB = ../crawler/*.go ../util/* ../robot/*.go ../storage/*
 
+
 all:$(qiubai_EXE) $(hahajh_EXE)
 
 $(qiubai_EXE):$(qiubai_SRC) $(LIB)
@@ -21,8 +22,8 @@ build:
 	go build $(hahajh_SRC)
 
 clean:
-	rm $(qiubai_EXE)
-	rm $(hahajh_EXE)
+	test -f $(qiubai_EXE) && rm $(qiubai_EXE)
+	test -f $(hahajh_EXE) && rm $(hahajh_EXE)
 
 test:
 	go test -v  $(ROOT_PATH)/crawler

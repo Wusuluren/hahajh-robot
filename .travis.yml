@@ -7,4 +7,3 @@ script:
   - cd build
   - make -f hahajh.makefile test
   - make -f hahajh.makefile build
-  - make -f hahajh.makefile clean
