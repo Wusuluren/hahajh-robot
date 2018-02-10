@@ -1,3 +1,5 @@
+ROOT_PATH = github.com/wusuluren/hahajh-robot
+
 qiubai_EXE = qiubai.exe
 qiubai_SRC = ../cmd/crawler/qiubai.go
 
@@ -13,3 +15,18 @@ $(qiubai_EXE):$(qiubai_SRC) $(LIB)
 
 $(hahajh_EXE):$(hahajh_SRC) $(LIB)
 	go build $(hahajh_SRC)
+
+build:
+	go build $(qiubai_SRC)
+	go build $(hahajh_SRC)
+
+clean:
+	rm $(qiubai_EXE)
+	rm $(hahajh_EXE)
+
+test:
+	go test -v  $(ROOT_PATH)/crawler
+	go test -v  $(ROOT_PATH)/robot
+	go test -v  $(ROOT_PATH)/storage
+	go test -v  $(ROOT_PATH)/util/gquery
+	go test -v  $(ROOT_PATH)/util/stack

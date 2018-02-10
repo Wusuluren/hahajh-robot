@@ -4,5 +4,7 @@ go:
    - 1.7
 
 script:
-  - make -f ./build/test.makefile
-  - make -f ./build/hahajh.makefile
+  - cd build
+  - make -f hahajh.makefile test
+  - make -f hahajh.makefile build
+  - make -f hahajh.makefile clean
