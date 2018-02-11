@@ -21,11 +21,18 @@ type ArgInfo struct {
 	isDir bool
 }
 
+type GoStat struct {
+	stat    string
+	vars    []string
+	pos     []int
+	pattern string
+}
+
 type DefineItem struct {
 	keyword string
 	name    string
 	args    []string
-	values  []string
+	values  []*GoStat
 	prefix  string
 }
 
@@ -51,7 +58,6 @@ func main() {
 	args := os.Args[1:]
 	argsInfo := make([]*ArgInfo, 0)
 	for _, arg := range args {
-		//fmt.Println(arg)
 		fileInfo, err := os.Stat(arg)
 		Panic(err)
 		argsInfo = append(argsInfo, &ArgInfo{
@@ -79,21 +85,7 @@ func readWriteLine(reader *bufio.Reader, writer *bufio.Writer) (string, error) {
 	return line, nil
 }
 
-func preReadBytes(reader *bufio.Reader, num int) ([]byte, error) {
-	//lines := make([]string, num)
-	bytes, err := reader.Peek(num)
-	//for i := 0;i < num;i++ {
-	//	bytes, _, err := reader.ReadLine()
-	//	if err != nil {
-	//		return lines, err
-	//	}
-	//	line := string(bytes)
-	//	lines[i] = line
-	//}
-	return bytes, err
-}
-
-func parseDeclare(lines []string) ([]*DefineItem, error) {
+func parseMacroDeclare(lines []string) ([]*DefineItem, error) {
 	defineItems := make([]*DefineItem, 0)
 	lineNum := len(lines)
 	lineIdx := 0
@@ -101,71 +93,71 @@ func parseDeclare(lines []string) ([]*DefineItem, error) {
 	except := Keyword
 	var keyword, name string
 	var args = make([]string, 0)
-	var values = make([]string, 0)
-	stk := stack.NewStack()
+	var values = make([]*GoStat, 0)
 	for {
 		line := lines[lineIdx]
-		//fmt.Println(line)
-		//line = strings.Trim(line, "\t ")
 		if except == Keyword {
 			if len(line) >= 8 && line[0:8] == "#define " {
+				//fmt.Println(line)
 				if defineItem != nil {
 					defineItems = append(defineItems, defineItem)
+					defineItem = nil
 					keyword = ""
 					name = ""
-					values = make([]string, 0)
+					values = make([]*GoStat, 0)
 					args = make([]string, 0)
 				}
 				keyword = "define"
-				idx := 8
-				last := 8
+				isStart := false
+				stk := stack.NewStack()
+				start := 8
+				except = Name
 				for i := 8; i < len(line); i++ { //TODO:strong check
 					c := line[i]
-					if c == ' ' {
-						except = Values
-						idx = i + 1
-						break
-					} else if c == '(' {
-						except = Args
-						name = line[8:i]
-						stk.Push(i + 1)
-					} else if c == ')' {
-						except = Values
-						last = stk.Pop().(int)
-						args = append(args, line[last:i])
-					} else if c == ',' {
-						except = Args
-						last = stk.Pop().(int)
-						args = append(args, line[last:i])
-						stk.Push(i + 1)
-					}
-				}
-				v := ""
-				for i := len(line) - 1; i >= idx; i-- {
-					if line[i] != ' ' {
-						if line[i] == '\\' {
+					if isIdentifier(c) {
+						if !isStart {
+							stk.Push(i)
+							isStart = true
+						}
+					} else {
+						//if c == '(' {
+						//} else if c == ',' {
+						//} else if c == ')' {
+						//	except = Values
+						//	idx = i+1
+						//	break
+						//}
+						if c == '\\' {
 							except = Values
-						} else {
-							except = Keyword
-							v = line[idx : i+1]
 							break
+						}
+						if !stk.Empty() {
+							start = stk.Pop().(int)
+						}
+						if isStart {
+							isStart = false
+							identifier := line[start:i]
+							//fmt.Println(identifier)
+							if except == Name {
+								except = Args
+								name = identifier
+							} else if except == Args {
+								args = append(args, identifier)
+								if c == ')' { //TODO: check other
+									except = Values
+								}
+							} else if except == Values {
+								goStat := &GoStat{
+									stat: identifier,
+									vars: make([]string, 0),
+									pos:  make([]int, 0),
+								}
+								values = append(values, goStat)
+							}
 						}
 					}
 				}
-				idx = 0
 				prefix := ""
-				for i, c := range v {
-					if c != ' ' || c != '\t' {
-						idx = i
-						break
-					}
-				}
-				if v[idx:] != "" {
-					v = v[idx:]
-					prefix = v[0:idx]
-					values = append(values, v)
-				}
-				//fmt.Println("first:", prefix)
 				defineItem = &DefineItem{
 					keyword: keyword,
 					name:    name,
@@ -178,6 +170,7 @@ func parseDeclare(lines []string) ([]*DefineItem, error) {
 			}
 		} else if except == Values {
 			v := ""
+			fmt.Println(line)
 			except = Keyword
 			for i := len(line) - 1; i >= 0; i-- {
 				c := line[i]
@@ -190,28 +183,30 @@ func parseDeclare(lines []string) ([]*DefineItem, error) {
 					}
 				}
 			}
-			//fmt.Println("v:", v)
+			stat := ""
 			if defineItem.prefix != "" {
-				v = strings.Trim(v, defineItem.prefix)
+				stat = strings.Trim(v, defineItem.prefix)
 			} else {
 				idx := 0
-				prefix := ""
 				for i, c := range v {
 					if c != ' ' || c != '\t' {
 						idx = i
 						break
 					}
 				}
-				if v[idx:] != "" {
-					v = v[idx:]
-					prefix = v[0:idx]
-					defineItem.values = append(defineItem.values, v)
-					defineItem.prefix = prefix
-					//fmt.Println("next:", prefix)
-				}
+				stat = v[idx:]
+				defineItem.prefix = v[0:idx]
 			}
+			if stat != "" {
+				goStat := &GoStat{
+					stat: stat,
+					vars: make([]string, 0),
+					pos:  make([]int, 0),
+				}
+				defineItem.values = append(defineItem.values, goStat)
+			}
+			//fmt.Println(defineItem.prefix, stat)
 		}
-
 		lineIdx += 1
 		if lineIdx >= lineNum {
 			break
@@ -220,13 +215,99 @@ func parseDeclare(lines []string) ([]*DefineItem, error) {
 	if defineItem != nil {
 		defineItems = append(defineItems, defineItem)
 	}
-	//for _, item := range defineItems {
-	//	fmt.Println(item)
-	//}
+	parseGoStats(defineItems)
+	for _, item := range defineItems {
+		fmt.Println(item)
+		for _, value := range item.values {
+			fmt.Println(value.stat, value.pattern, value.vars, value.pos)
+		}
+	}
 	return defineItems, nil
 }
 
-func parseStat(line string) (*DefineItem, error) {
+func isIdentifier(c byte) bool {
+	return (c >= 'a' && c <= 'z') ||
+		(c >= 'A' && c <= 'Z') ||
+		(c >= '0' && c <= '9')
+}
+
+func parseGoStats(defineItems []*DefineItem) {
+	for _, defineItem := range defineItems {
+		if len(defineItem.args) == 0 {
+			continue
+		}
+		if len(defineItem.values) == 0 {
+			continue
+		}
+		for _, value := range defineItem.values {
+			//fmt.Println(value.stat)
+			stk := stack.NewStack()
+			idx := 0
+			isStart := false
+			start := 0
+			for {
+				c := value.stat[idx]
+				if isIdentifier(c) {
+					if !isStart {
+						stk.Push(idx)
+						isStart = true
+					}
+				} else {
+					if !stk.Empty() {
+						start = stk.Pop().(int)
+					}
+					if isStart {
+						isStart = false
+						identifier := value.stat[start:idx]
+						isArg := false
+						for i, arg := range defineItem.args {
+							if arg == identifier {
+								value.vars = append(value.vars, identifier)
+								value.pos = append(value.pos, i)
+								isArg = true
+							}
+						}
+						if isArg {
+							value.pattern += "%s"
+						} else {
+							value.pattern += identifier
+						}
+						fmt.Println(isArg, start, identifier, value.pattern, string(c))
+					}
+					value.pattern += string(c)
+				}
+				idx += 1
+				if idx >= len(value.stat) {
+					if !stk.Empty() {
+						start = stk.Pop().(int)
+					}
+					if isStart {
+						isStart = false
+						identifier := value.stat[start:idx]
+						isArg := false
+						for i, arg := range defineItem.args {
+							if arg == identifier {
+								value.vars = append(value.vars, identifier)
+								value.pos = append(value.pos, i)
+								isArg = true
+							}
+						}
+						if isArg {
+							value.pattern += "%s"
+						} else {
+							value.pattern += identifier
+						}
+						fmt.Println(isArg, start, identifier, value.pattern, string(c))
+					}
+					break
+				}
+			}
+		}
+		//fmt.Println(defineItem)
+	}
+}
+
+func parseMacroStat(line string) (*DefineItem, error) {
 	var defineItem *DefineItem
 	var name string
 	var args = make([]string, 0)
@@ -262,6 +343,8 @@ func parseStat(line string) (*DefineItem, error) {
 		name: name,
 		args: args,
 	}
+	parseGoStats([]*DefineItem{defineItem})
+	//fmt.Println(defineItem)
 	return defineItem, nil
 }
 
@@ -273,7 +356,8 @@ func gomacro(filepath string) {
 	Panic(err)
 	writer := bufio.NewWriter(file2)
 	var line string
-	for {
+	eof := false
+	for !eof {
 		line, err = readWriteLine(reader, writer)
 		if err != nil {
 			break
@@ -298,28 +382,47 @@ func gomacro(filepath string) {
 				}
 				macroLines = append(macroLines, line)
 			}
-			defineItems, err := parseDeclare(macroLines)
+			defineItems, err := parseMacroDeclare(macroLines)
 			Panic(err)
 			for _, defineItem := range defineItems {
 				defineMap[defineItem.name] = defineItem
 			}
 		} else if strings.HasPrefix(strings.TrimLeft(line, "\t "), "// +go macro: ") {
 			// macro declare
-			defineStat, err := parseStat(line)
+			defineStat, err := parseMacroStat(line)
 			Panic(err)
-			//fmt.Println(defineStat)
 			if defineItem, ok := defineMap[defineStat.name]; !ok {
 				Panic(errors.New(fmt.Sprintf("unknowm name:%s", defineStat.name)))
 			} else {
 				size := 0
-				for _, v := range defineItem.values {
-					size += len(v) + 1
+				for _, stat := range defineItem.values {
+					size += len(stat.stat) + 1
 				}
-				bytes, err := preReadBytes(reader, size)
-				Panic(err)
-				if string(bytes) != strings.Join(defineItem.values, "\n")+"\n" {
-					for _, v := range defineItem.values {
-						_, err = writer.WriteString(v + "\n")
+				bytes, _ := reader.Peek(size) //ignore io.EOF
+				statValues := ""
+				stats := strings.Split(string(bytes), "\r\n")
+				statValues = strings.Join(stats, "\n") + "\n"
+				fmt.Println("stat:", stats)
+				_ = statValues
+				macroValues := ""
+				for _, stat := range defineItem.values {
+					//macroValues += stat.stat + "\n"
+					macroValues += stat.pattern + "\n"
+				}
+				fmt.Println("macro:", macroValues)
+				if string(bytes) != macroValues {
+					for _, stat := range defineItem.values {
+						if len(defineStat.args) > 0 {
+							fmt.Println(defineStat.args)
+							ifs := make([]interface{}, 0)
+							for i := range stat.pos {
+								arg := defineStat.args[stat.pos[i]]
+								ifs = append(ifs, arg)
+							}
+							_, err = writer.WriteString(fmt.Sprintf(stat.pattern+"\n", ifs...))
+						} else {
+							_, err = writer.WriteString(stat.stat + "\n")
+						}
 						Panic(err)
 					}
 				}

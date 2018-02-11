@@ -16,6 +16,7 @@ func (s *Stack) Pop() interface{} {
 	}
 	item := s.stack[s.size-1]
 	s.size -= 1
+	s.stack = s.stack[0:s.size]
 	return item
 }
 
