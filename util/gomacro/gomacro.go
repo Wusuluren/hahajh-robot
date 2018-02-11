@@ -170,7 +170,7 @@ func parseMacroDeclare(lines []string) ([]*DefineItem, error) {
 			}
 		} else if except == Values {
 			v := ""
-			fmt.Println(line)
+			//fmt.Println(line)
 			except = Keyword
 			for i := len(line) - 1; i >= 0; i-- {
 				c := line[i]
@@ -272,7 +272,7 @@ func parseGoStats(defineItems []*DefineItem) {
 						} else {
 							value.pattern += identifier
 						}
-						fmt.Println(isArg, start, identifier, value.pattern, string(c))
+						//fmt.Println(isArg, start, identifier, value.pattern, string(c))
 					}
 					value.pattern += string(c)
 				}
@@ -297,7 +297,7 @@ func parseGoStats(defineItems []*DefineItem) {
 						} else {
 							value.pattern += identifier
 						}
-						fmt.Println(isArg, start, identifier, value.pattern, string(c))
+						//fmt.Println(isArg, start, identifier, value.pattern, string(c))
 					}
 					break
 				}
@@ -311,37 +311,43 @@ func parseMacroStat(line string) (*DefineItem, error) {
 	var defineItem *DefineItem
 	var name string
 	var args = make([]string, 0)
-	stk := stack.NewStack()
 	line = strings.TrimLeft(line, "\t ")
 	line = strings.TrimPrefix(line, "// +go macro: ")
-	last := 0
+	stk := stack.NewStack()
+	start := 0
 	except := Name
+	isStart := false
 	for i := 0; i < len(line); i++ { //TODO:strong check
 		c := line[i]
-		if except == Values {
-			if c != ' ' && c != '\t' && c != '\n' && c != '\r' {
-				Panic(errors.New("bad statement"))
+		if isIdentifier(c) {
+			if !isStart {
+				stk.Push(i)
+				isStart = true
 			}
 		} else {
-			if c == '(' {
-				except = Args
-				name = line[0:i]
-				stk.Push(i + 1)
-			} else if c == ')' {
-				except = Values
-				last = stk.Pop().(int)
-				args = append(args, line[last:i])
-			} else if c == ',' {
-				except = Args
-				last = stk.Pop().(int)
-				args = append(args, line[last:i])
-				stk.Push(i + 1)
+			if !stk.Empty() {
+				start = stk.Pop().(int)
+			}
+			if isStart {
+				isStart = false
+				identifier := line[start:i]
+				//fmt.Println(identifier)
+				if except == Name {
+					except = Args
+					name = identifier
+				} else if except == Args {
+					args = append(args, identifier)
+					if c == ')' { //TODO: check other
+						except = Values
+					}
+				}
 			}
 		}
 	}
 	defineItem = &DefineItem{
 		name: name,
 		args: args,
+		//values: values,
 	}
 	parseGoStats([]*DefineItem{defineItem})
 	//fmt.Println(defineItem)
@@ -399,21 +405,23 @@ func gomacro(filepath string) {
 					size += len(stat.stat) + 1
 				}
 				bytes, _ := reader.Peek(size) //ignore io.EOF
-				statValues := ""
-				stats := strings.Split(string(bytes), "\r\n")
-				statValues = strings.Join(stats, "\n") + "\n"
-				fmt.Println("stat:", stats)
-				_ = statValues
+				statValues := string(bytes)
 				macroValues := ""
-				for _, stat := range defineItem.values {
-					//macroValues += stat.stat + "\n"
-					macroValues += stat.pattern + "\n"
+				for _, value := range defineItem.values {
+					if len(defineStat.args) > 0 {
+						ifs := make([]interface{}, 0)
+						for i := range value.pos {
+							arg := defineStat.args[value.pos[i]]
+							ifs = append(ifs, arg)
+						}
+						macroValues += fmt.Sprintf(value.pattern+"\n", ifs...)
+					}
 				}
-				fmt.Println("macro:", macroValues)
-				if string(bytes) != macroValues {
+				//fmt.Println(len(macroValues), macroValues)
+				//fmt.Println(len(statValues), statValues)
+				if statValues != macroValues {
 					for _, stat := range defineItem.values {
 						if len(defineStat.args) > 0 {
-							fmt.Println(defineStat.args)
 							ifs := make([]interface{}, 0)
 							for i := range stat.pos {
 								arg := defineStat.args[stat.pos[i]]
