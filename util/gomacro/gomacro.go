@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/wusuluren/hahajh-robot/util/stack"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -67,7 +68,17 @@ func main() {
 	}
 	for _, argInfo := range argsInfo {
 		if argInfo.isDir {
-
+			filepath.Walk(argInfo.name, func(path string, info os.FileInfo, err error) error {
+				if info == nil {
+					return err
+				}
+				if info.IsDir() {
+					return nil
+				} else {
+					gomacro(path)
+				}
+				return nil
+			})
 		} else {
 			gomacro(argInfo.name)
 		}
@@ -355,6 +366,9 @@ func parseMacroStat(line string) (*DefineItem, error) {
 }
 
 func gomacro(filepath string) {
+	if !strings.HasSuffix(filepath, ".go") {
+		return
+	}
 	file, err := os.OpenFile(filepath, os.O_RDONLY, 0666)
 	Panic(err)
 	reader := bufio.NewReader(file)
