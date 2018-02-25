@@ -7,6 +7,3 @@ crawler for qiushibaike, baisibudejie and more
 web api robot for hahajh.com
 - storage  
 hope to support many database like mongo, mysql, redis and json-based file
-- util  
-    - gquery  
-    a simple dom parser
