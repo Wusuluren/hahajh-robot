@@ -17,6 +17,9 @@ func (q *qiubai) Download(url string) ([]map[string]string, error) {
 	}
 	defer resp.Body.Close()
 	bytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
 	html := string(bytes)
 	articles := gquery.NewHtml(html).Gquery("body").Eq(0).
 		First("div#content").
