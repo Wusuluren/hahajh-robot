@@ -17,148 +17,79 @@ func (b *bsbdj) Download(url string) ([]map[string]string, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	//f, err := os.Open("test.html")
-	//if err != nil {
-	//	return nil, err
-	//}
-	//defer f.Close()
-	//bytes, err := ioutil.ReadAll(f)
-	//f, err := os.OpenFile("test.html", os.O_CREATE, 0666)
-	//if err != nil {
-	//	return err
-	//}
-	//defer f.Close()
-	//f.Write(bytes)
 	bytes, err := ioutil.ReadAll(resp.Body)
 	html := string(bytes)
-	//print(html)
 
-	htmlNodeTree := gquery.ParseHtml(html)
 	var htmlRoot *gquery.HtmlNode
-	for _, node := range htmlNodeTree {
-		if node.Label == "body" {
-			htmlRoot = node
-			break
-		}
-	}
-	if isEmptyNode(htmlRoot) {
+	children := gquery.NewHtml(html).Gquery("body")
+	if len(children) > 0 {
+		htmlRoot = children[0]
+	} else {
 		fmt.Println("htmlRoot not found")
 		return nil, nil
 	}
+
 	items := make([]map[string]string, 0)
+	for ctr := 0; ctr < 2; ctr++ {
+		articles := htmlRoot.First("div.j-content").
+			First("div.g-bd.f-cb").
+			First("div.g-mn").
+			First("div.j-r-c").
+			Children("div.j-r-list").Eq(ctr).
+			First("ul").
+			Children("li")
+		for _, article := range articles {
+			item := make(map[string]string)
+			context := article.First("div.j-r-list-c").
+				First("div.j-r-list-c-desc").
+				First("a")
+			text := context.First("*").Text()
+			text = strings.TrimLeft(text, " \t\r\n")
+			text = strings.TrimRight(text, " \t\r\n")
+			item["content"] = text
 
-	articles := htmlRoot.Find("div.\"j-content\"").
-		Find("div.\"g-bd f-cb\"").
-		Find("div.\"g-mn\"").
-		Find("div.\"j-r-c\"").
-		Eq("div.\"j-r-list\"", 0).
-		Find("ul").
-		Children("li")
-	for _, article := range articles {
-		item := make(map[string]string)
-		context := article.Find("div.\"j-r-list-c\"").
-			Find("div.\"j-r-list-c-desc\"").
-			Find("a")
-		item["content"] = getChildrenText(context)
+			thumb := article.First("div.j-r-list-c").
+				First("div.j-r-list-c-img").
+				First("a").
+				First("img")
+			thumbStr := ""
+			thumbStr = thumb.Attr("data-original")
+			item["thumb"] = strings.Trim(thumbStr, "\t\n\r ")
 
-		thumb := article.Find("div.\"j-r-list-c\"").
-			Find("div.\"j-r-list-c-img\"").
-			Find("a").
-			Find("img")
-		thumbStr := ""
-		if value, ok := thumb.Attribute["data-original"]; ok {
-			thumbStr = value
+			items = append(items, item)
 		}
-		item["thumb"] = strings.Trim(thumbStr, "\t\n\r ")
-
-		items = append(items, item)
 	}
 
-	articles = htmlRoot.Find("div.\"j-content\"").
-		Find("div.\"g-bd f-cb\"").
-		Find("div.\"g-mn\"").
-		Find("div.\"j-r-c\"").
-		Eq("div.\"j-r-list\"", 1).
-		Find("ul").
-		Children("li")
-	for _, article := range articles {
-		item := make(map[string]string)
-		context := article.Find("div.\"j-r-list-c\"").
-			Find("div.\"j-r-list-c-desc\"").
-			Find("a")
-		item["content"] = getChildrenText(context)
+	for ctr := 0; ctr < 2; ctr++ {
+		articles := htmlRoot.First("div.j-content").
+			First("div.g-bd f-cb").
+			First("div.g-mn").
+			First("div.j-r-c").
+			Children("div.j-r-wrst").Eq(ctr).
+			First("div.j-list").
+			Children("div.j-list-c")
+		for _, article := range articles {
+			item := make(map[string]string)
+			context := article.First("div.j-item").
+				First("div.j-item-des").
+				First("a")
+			text := context.First("*").Text()
+			text = strings.TrimLeft(text, " \t\r\n")
+			text = strings.TrimRight(text, " \t\r\n")
+			item["content"] = text
 
-		thumb := article.Find("div.\"j-r-list-c\"").
-			Find("div.\"j-r-list-c-img\"").
-			Find("a").
-			Find("img")
-		thumbStr := ""
-		if value, ok := thumb.Attribute["data-original"]; ok {
-			thumbStr = value
+			thumb := article.First("div.j-item").
+				First("a").
+				First("div.j-item-img").
+				First("img")
+
+			thumbStr := ""
+			thumbStr = thumb.Attr("data-original")
+			item["thumb"] = strings.Trim(thumbStr, "\t\n\r ")
+
+			items = append(items, item)
 		}
-		item["thumb"] = strings.Trim(thumbStr, "\t\n\r ")
-
-		items = append(items, item)
 	}
-
-	articles = htmlRoot.Find("div.\"j-content\"").
-		Find("div.\"g-bd f-cb\"").
-		Find("div.\"g-mn\"").
-		Find("div.\"j-r-c\"").
-		Eq("div.\"j-r-wrst gud-put*\"", 0).
-		Find("div.\"j-list\"").
-		Children("div.\"j-list-c\"")
-
-	for _, article := range articles {
-		item := make(map[string]string)
-		context := article.Find("div.\"j-item\"").
-			Find("div.\"j-item-des\"").
-			Find("a")
-		item["content"] = getChildrenText(context)
-
-		thumb := article.Find("div.\"j-item\"").
-			Find("a").
-			Find("div.\"j-item-img\"").
-			Find("img")
-
-		thumbStr := ""
-		if value, ok := thumb.Attribute["data-original"]; ok {
-			thumbStr = value
-		}
-		item["thumb"] = strings.Trim(thumbStr, "\t\n\r ")
-
-		items = append(items, item)
-	}
-
-	articles = htmlRoot.Find("div.\"j-content\"").
-		Find("div.\"g-bd f-cb\"").
-		Find("div.\"g-mn\"").
-		Find("div.\"j-r-c\"").
-		Eq("div.\"j-r-wrst gud-put*\"", 1).
-		Find("div.\"j-list\"").
-		Children("div.\"j-list-c\"")
-
-	for _, article := range articles {
-		item := make(map[string]string)
-		context := article.Find("div.\"j-item\"").
-			Find("div.\"j-item-des\"").
-			Find("a")
-		item["content"] = getChildrenText(context)
-
-		thumb := article.Find("div.\"j-item\"").
-			Find("a").
-			Find("div.\"j-item-img\"").
-			Find("img")
-
-		thumbStr := ""
-		if value, ok := thumb.Attribute["data-original"]; ok {
-			thumbStr = value
-		}
-		item["thumb"] = strings.Trim(thumbStr, "\t\n\r ")
-
-		items = append(items, item)
-	}
-
 	return items, nil
 }
 
