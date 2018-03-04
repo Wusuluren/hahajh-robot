@@ -1,7 +1,6 @@
 package crawler
 
 import (
-	"fmt"
 	"github.com/wusuluren/gquery"
 	"io/ioutil"
 	"net/http"
@@ -19,23 +18,14 @@ func (b *bsbdj) Download(url string) ([]map[string]string, error) {
 	defer resp.Body.Close()
 	bytes, err := ioutil.ReadAll(resp.Body)
 	html := string(bytes)
-
-	var htmlRoot *gquery.HtmlNode
-	children := gquery.NewHtml(html).Gquery("body")
-	if len(children) > 0 {
-		htmlRoot = children[0]
-	} else {
-		fmt.Println("htmlRoot not found")
-		return nil, nil
-	}
-
+	headerNode := gquery.NewHtml(html).Gquery("body").Eq(0).
+		First("div.j-content").
+		First("div.g-bd.f-cb").
+		First("div.g-mn").
+		First("div.j-r-c")
 	items := make([]map[string]string, 0)
 	for ctr := 0; ctr < 2; ctr++ {
-		articles := htmlRoot.First("div.j-content").
-			First("div.g-bd.f-cb").
-			First("div.g-mn").
-			First("div.j-r-c").
-			Children("div.j-r-list").Eq(ctr).
+		articles := headerNode.Children("div.j-r-list").Eq(ctr).
 			First("ul").
 			Children("li")
 		for _, article := range articles {
@@ -59,13 +49,8 @@ func (b *bsbdj) Download(url string) ([]map[string]string, error) {
 			items = append(items, item)
 		}
 	}
-
 	for ctr := 0; ctr < 2; ctr++ {
-		articles := htmlRoot.First("div.j-content").
-			First("div.g-bd f-cb").
-			First("div.g-mn").
-			First("div.j-r-c").
-			Children("div.j-r-wrst").Eq(ctr).
+		articles := headerNode.Children("div.j-r-wrst").Eq(ctr).
 			First("div.j-list").
 			Children("div.j-list-c")
 		for _, article := range articles {

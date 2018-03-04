@@ -1,7 +1,6 @@
 package crawler
 
 import (
-	"fmt"
 	"github.com/wusuluren/gquery"
 	"io/ioutil"
 	"net/http"
@@ -19,16 +18,8 @@ func (q *qiubai) Download(url string) ([]map[string]string, error) {
 	defer resp.Body.Close()
 	bytes, err := ioutil.ReadAll(resp.Body)
 	html := string(bytes)
-
-	var htmlRoot *gquery.HtmlNode
-	children := gquery.NewHtml(html).Gquery("body")
-	if len(children) > 0 {
-		htmlRoot = children[0]
-	} else {
-		fmt.Println("htmlRoot not found")
-		return nil, nil
-	}
-	articles := htmlRoot.First("div#content").
+	articles := gquery.NewHtml(html).Gquery("body").Eq(0).
+		First("div#content").
 		First("div.content-block.clearfix").
 		First("div#content-left").
 		Children("div.article.block.untagged.mb15")
