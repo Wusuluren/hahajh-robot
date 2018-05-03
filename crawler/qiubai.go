@@ -32,8 +32,20 @@ func (q *qiubai) Download(url string) ([]map[string]string, error) {
 		context := article.First("a.contentHerf").
 			First("div.content").
 			First("span")
-
-		text := context.First("*").Text()
+		if context.Failed() { //for some weird reason
+			context = article.First("a.'contentHerf'").
+				First("div.content").
+				First("span")
+		}
+		text := ""
+		children := context.Children("*")
+		if len(children) > 0 {
+			for _, node := range children {
+				text += node.Text()
+			}
+		} else {
+			text = context.Text()
+		}
 		text = strings.TrimLeft(text, " \t\r\n")
 		text = strings.TrimRight(text, " \t\r\n")
 		item["content"] = text
@@ -41,8 +53,7 @@ func (q *qiubai) Download(url string) ([]map[string]string, error) {
 		thumb := article.First("div.thumb").
 			First("a").
 			First("img")
-		thumbStr := ""
-		thumbStr = thumb.Attr("src")
+		thumbStr := thumb.Attr("src")
 		item["thumb"] = strings.Trim(thumbStr, "\t\n\r ")
 
 		items = append(items, item)

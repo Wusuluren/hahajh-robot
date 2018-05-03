@@ -132,7 +132,7 @@ func asyncCrawlerPages(urlPattern string) {
 
 func asyncSaveItem() {
 	var err error
-	itemsInterface := make([]interface{}, 64)
+	itemsInterface := make([]interface{}, 0, 64)
 	ctr := 0
 	for {
 		select {
